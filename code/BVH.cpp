@@ -115,39 +115,8 @@ Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
         return node->object->getIntersection(ray);
     }
 
-    // Intersection hit1 = getIntersection(node->left, ray);
-    // Intersection hit2 = getIntersection(node->right, ray);
+    Intersection hit1 = getIntersection(node->left, ray);
+    Intersection hit2 = getIntersection(node->right, ray);
 
-    // return hit1.distance < hit2.distance ? hit1 : hit2;
-
-    // 计算光线进入左右子节点包围盒的距离，用于决定遍历顺序和剪枝
-    float t_enter_left  = std::numeric_limits<float>::max();
-    float t_enter_right = std::numeric_limits<float>::max();
-
-    if (node->left && node->left->bounds.IntersectP(ray, ray.direction_inv, dirIsNeg)) {
-        // 快速估算 entry distance：取光线原点到包围盒中心的距离
-        t_enter_left = dotProduct(node->left->bounds.Centroid() - ray.origin, ray.direction);
-    }
-    if (node->right && node->right->bounds.IntersectP(ray, ray.direction_inv, dirIsNeg)) {
-        t_enter_right = dotProduct(node->right->bounds.Centroid() - ray.origin, ray.direction);
-    }
-
-    // 先遍历距离近的子节点（front-to-back 遍历）
-    BVHBuildNode* first  = (t_enter_left <= t_enter_right) ? node->left  : node->right;
-    BVHBuildNode* second = (t_enter_left <= t_enter_right) ? node->right : node->left;
-    float t_second = std::min(t_enter_left, t_enter_right);  // 较远子节点的进入距离
-
-    Intersection hit = getIntersection(first, ray);
-
-    // 剪枝：near 子节点找到的交点距离 < far 子节点的进入距离 → 跳过 far
-    if (hit.happened && hit.distance < t_second) {
-        return hit;
-    }
-
-    Intersection hit2 = getIntersection(second, ray);
-    if (hit2.happened && hit2.distance < hit.distance) {
-        return hit2;
-    }
-
-    return hit;
+    return hit1.distance < hit2.distance ? hit1 : hit2;
 }
