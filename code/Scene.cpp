@@ -155,19 +155,7 @@ Vector3f Scene::castRay_noBVH(const Ray &ray, int depth) const
     if (hit)
     {   
         //TODO(Optional) Shader the Ray
-        
-        Intersection intersection;
-        for (const auto& obj : this->get_objects()) {
-            auto* mesh = dynamic_cast<MeshTriangle*>(obj);
-            if (mesh) {
-                for (auto& tri : mesh->triangles) {
-                    Intersection inter = tri.getIntersection(ray);
-                    if (inter.happened && inter.distance < intersection.distance) {
-                        intersection = inter;
-                    }
-                }
-            }
-        }
+        Intersection intersection = hit_obj->getIntersection(ray);
 
         if (intersection.happened) {
             Material *m = intersection.m;
